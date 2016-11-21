@@ -1,7 +1,5 @@
 package network;
 
-import network.shard.Shard;
-
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;

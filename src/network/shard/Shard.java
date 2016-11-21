@@ -1,6 +1,7 @@
 package network.shard;
 
-import network.*;
+import network.Array;
+import network.Node;
 import network.shard.inif.InifContract;
 import network.shard.inif.InifCore;
 
