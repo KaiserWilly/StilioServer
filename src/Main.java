@@ -17,6 +17,7 @@ public class Main {
     static private Pattern IPV4_PATTERN = Pattern.compile(IPV4_REGEX);
 
     public static void main(String[] args) {
+        System.setProperty("prism.lcdtext", "false");
         ArrayList<String> argsList = new ArrayList<>();
         Collections.addAll(argsList, args);
 

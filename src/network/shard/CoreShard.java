@@ -29,7 +29,7 @@ public class CoreShard extends Shard implements InifCore {
     private void startPing(Array data) {
         timer = new Timer();
         System.out.println("Server Health Check Started!");
-        timer.scheduleAtFixedRate(timerTask(data), 5000, 1000); //Task, delay, update speed
+        timer.scheduleAtFixedRate(timerTask(data), 3000, 1000); //Task, delay, update speed
     }
 
     private static TimerTask timerTask(Array data) {

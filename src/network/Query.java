@@ -62,13 +62,14 @@ public class Query implements InifQuery {
                     Node n = nodeList.get(0);
                     nodeList.remove(0);
                     n.setShard(SHARD);
-                    data.addNode(n);
+
                     data.addShardMap(n);
                     Registry registry = LocateRegistry.getRegistry(n.getNodeIP(), n.getNodePort()); //IP Address of RMI Server, port of RMIRegistry
                     InifServer stub = (InifServer) registry.lookup("AdminServer"); //Name of RMI Server in registry
                     if (!stub.ping()) {
                         throw new RemoteException("Node not valid!");
                     }
+                    data.addNode(n);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -101,7 +102,7 @@ public class Query implements InifQuery {
                     InifNode stub = (InifNode) registry.lookup("AdminNode"); //Name of RMI Server in registry
                     stub.setArrayData(data);
                     stub.setShard(n.getShard());
-                    stub.startService();
+                    stub.startService(n.getNodePort());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

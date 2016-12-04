@@ -9,6 +9,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Timer;
 
 /**
  * Created by JD Isenhart on 10/24/2016.
@@ -18,16 +19,19 @@ public class Node implements InifNode, InifServer, Serializable {
     private Array arrayData;
     private Shard shard;
     private String queryIP, nodeIP;
-    private int nodePort = 1180;
+    private int nodePort = 1180, qport = 1180;
+    private boolean coreCheck = true;
+    private Timer timer;
 
     public Node() {
     }
 
-    public Node(String queryIP, int port) {
+    public Node(String queryIP, int qPort) {
         createRegistry();
         startAdminServer();
-        registerWithQuery(queryIP, port);
+        registerWithQuery(queryIP, qPort);
         this.queryIP = queryIP;
+        this.qport = qPort;
     }
 
     public Node(String nodeIP, int port, Shard shard) {
@@ -78,7 +82,7 @@ public class Node implements InifNode, InifServer, Serializable {
             Registry registry = LocateRegistry.getRegistry(queryIP, port); //IP Address of RMI Server, nodePort of RMIRegistry
             InifQuery stub = (InifQuery) registry.lookup("Query"); //Name of RMI Server in registry
             stub.registerNode(Inet4Address.getLocalHost().getHostAddress(), nodePort);
-            System.out.println("Successfully Registered with Query! Port: "+nodePort);
+            System.out.println("Successfully Registered with Query! Port: " + nodePort);
         } catch (Exception e) {
             System.err.println("Can't connect to Query Server!");
             System.err.println("IP Address: " + queryIP + "  Port: " + port);
@@ -87,17 +91,17 @@ public class Node implements InifNode, InifServer, Serializable {
         }
     }
 
-    public void startService() throws RemoteException {
+    public void startService(int resetPort) throws RemoteException {
+//        nodePort = resetPort;
         System.out.println("Current Port: " + nodePort);
         System.out.println("Service Started!");
         System.out.println("Core IP: " + arrayData.getShardMap().get(new CoreShard().getRole()).getNodeIP());
         System.out.println("Port: " + arrayData.getShardMap().get(new CoreShard().getRole()).getNodePort());
         System.out.println("Role of this server: " + shard.getRole());
+//        if (!shard.getRole().equals("Core")) {
+//            startCoreCheck();
+//        }
         shard.startShard(arrayData, this);
-
-    }
-
-    private void endService() {
 
     }
 
@@ -107,7 +111,7 @@ public class Node implements InifNode, InifServer, Serializable {
         System.err.println("Node Unassigned! Reason: " + reason);
         arrayData = null;
         shard = null;
-        registerWithQuery(this.queryIP, 1180);
+        registerWithQuery(this.queryIP, this.qport);
     }
 
     public void setShard(Shard shard) {
@@ -135,6 +139,32 @@ public class Node implements InifNode, InifServer, Serializable {
     }
 
     public boolean ping() {
+        coreCheck = true;
+        System.out.println("Check in From Core");
         return true;
     }
+
+//    private void startCoreCheck() {
+//        timer = new Timer();
+//        System.out.println("Core Integrity Check Started!");
+//        timer.scheduleAtFixedRate(timerTask(), 7000, 3000); //Task, delay, update speed
+//    }
+//
+//    private TimerTask timerTask() {
+//        return new TimerTask() {
+//
+//            @Override
+//            public void run() {
+//                if (coreCheck) {
+//                    coreCheck = false;
+//                } else {
+//                    try {
+//                        unassignNode("Core timed out!", nodePort);
+//                    } catch (RemoteException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        };
+//    }
 }
