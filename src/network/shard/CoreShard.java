@@ -42,7 +42,7 @@ public class CoreShard extends Shard implements InifCore {
                     try {
                         Registry registry = LocateRegistry.getRegistry(n.getNodeIP(), n.getNodePort()); //IP Address of RMI Server, port of RMIRegistry
                         InifServer stub = (InifServer) registry.lookup("AdminServer"); //Name of RMI Server in registry
-                        stub.ping();
+//                        stub.ping();
                     } catch (Exception e) {
                         try {
                             System.err.println("Node IP: " + n.getNodeIP());
@@ -72,7 +72,7 @@ public class CoreShard extends Shard implements InifCore {
                 try {
                     Registry nodeRegistry = LocateRegistry.getRegistry(n.getNodeIP(), n.getNodePort()); //IP Address of RMI Server, port of RMIRegistry
                     InifNode nodeStub = (InifNode) nodeRegistry.lookup("AdminNode"); //Name of RMI Server in registry
-                    nodeStub.unassignNode("Node Timeout", n.getNodePort());
+                    nodeStub.unassignNode("Node Timeout");
                 } catch (Exception e1) {
                     System.err.println("Can't Contact Node!");
                 }

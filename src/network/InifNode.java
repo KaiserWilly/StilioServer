@@ -17,7 +17,7 @@ public interface InifNode extends Remote {
 
     void setArrayData(Array data) throws RemoteException;
 
-    void startService(int resetPort) throws RemoteException;
+    void startService() throws RemoteException;
 
-    void unassignNode(String reason, int nodePort) throws RemoteException;
+    void unassignNode(String reason) throws RemoteException;
 }
