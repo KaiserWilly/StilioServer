@@ -58,7 +58,7 @@ public class CoreShard extends Shard implements InifCore {
                         }
                     }
                 });
-                System.out.println("System Integrity Good!");
+//                System.out.println("System Integrity Good!");
             }
         };
     }
@@ -74,7 +74,7 @@ public class CoreShard extends Shard implements InifCore {
                     InifNode nodeStub = (InifNode) nodeRegistry.lookup("AdminNode"); //Name of RMI Server in registry
                     nodeStub.unassignNode("Node Timeout");
                 } catch (Exception e1) {
-                    System.err.println("Can't Contact Node!");
+                    System.err.println("Can't Contact Node! IP:"+n.getNodeIP()+" Port:"+n.getNodePort());
                 }
             }
         } catch (Exception e) {

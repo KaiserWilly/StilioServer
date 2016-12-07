@@ -9,6 +9,6 @@ import java.rmi.RemoteException;
  */
 public interface InifQuery extends Remote {
     void registerNode(String ip, int port) throws RemoteException;
-
     void removeArray(Array a) throws RemoteException;
+    void queryErrState(String statement) throws RemoteException;
 }

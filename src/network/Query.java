@@ -51,6 +51,10 @@ public class Query implements InifQuery {
         System.err.println("Array Dissolved!");
     }
 
+    public void queryErrState(String statement) throws RemoteException {
+        System.err.println(statement);
+    }
+
     private class ArrayCreate extends Thread {
         Array data = new Array();
 
