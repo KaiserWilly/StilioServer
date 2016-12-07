@@ -95,6 +95,7 @@ public class Node implements InifNode, InifServer, Serializable {
             System.err.println("Can't connect to Query Server!");
             System.err.println("IP Address: " + queryIP + "  Port: " + port);
             System.err.println("Terminating Node");
+            e.printStackTrace();
             System.exit(0);
         }
     }

@@ -8,6 +8,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by JD Isenhart on 11/17/2016.
@@ -29,6 +30,7 @@ public class Query implements InifQuery {
             System.out.println("Query Server Started!");
             System.out.println("IP Address: " + Inet4Address.getLocalHost().getHostAddress());
             System.out.println("Port: " + port);
+            new QueryIOConsole(Inet4Address.getLocalHost().getHostAddress(), 1180).run();
         } catch (Exception e) {
             System.err.println("Can't create Query Server");
             e.printStackTrace();
@@ -37,8 +39,23 @@ public class Query implements InifQuery {
     }
 
     public void registerNode(String ip, int port) throws RemoteException {
-        nodeList.add(new Node(ip, port, null));
-        System.out.println("New Node! IP: " + ip + " Port: " + port);
+        Node nNode = new Node(ip, port, null);
+        boolean update = false;
+
+        for (int i = 0; i < nodeList.size() && !update; i++) {
+            Node n = nodeList.get(i);
+            if (n.getNodeIP().equals(ip) && n.getNodePort() == port) {
+                nodeList.set(i, nNode);
+                System.out.println("Reconnected Node! IP: " + ip + " Port: " + port);
+                update = true;
+            }
+        }
+        if (!update) {
+            nodeList.add(new Node(ip, port, null));
+            System.out.println("New Node! IP: " + ip + " Port: " + port);
+        }
+
+
         if (nodeList.size() >= SHARDS.length) {
             System.out.println("Creating new Array!");
             new ArrayCreate().run();
@@ -59,29 +76,31 @@ public class Query implements InifQuery {
         Array data = new Array();
 
         public void run() {
+            List<Node> aList = new ArrayList<>();
+            Node n = null;
             try {
                 data.setQueryIP(Inet4Address.getLocalHost().getHostAddress());
                 data.setQueryPort(1180);
-                for (Shard SHARD : SHARDS) { //Verify Node is active
-                    Node n = nodeList.get(0);
-                    nodeList.remove(0);
-                    n.setShard(SHARD);
-
+                for (int i = 0; i < SHARDS.length; i++) { //Verify Node is active
+                    n = nodeList.get(i);
+                    aList.add(n);
+                    n.setShard(SHARDS[i]);
                     data.addShardMap(n);
                     Registry registry = LocateRegistry.getRegistry(n.getNodeIP(), n.getNodePort()); //IP Address of RMI Server, port of RMIRegistry
-                    InifServer stub = (InifServer) registry.lookup("AdminServer"); //Name of RMI Server in registry
+                    registry.lookup("AdminServer"); //Name of RMI Server in registry
                     data.addNode(n);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 System.err.println("Unable to create new Array! (Ping)");
-                nodeList.addAll(data.getNodeList());
+                nodeList.remove(nodeList.indexOf(n));
                 System.out.println("Returned good Nodes to List!");
                 return;
             }
+            nodeList.removeAll(aList);
 
-            for (Node n : data.getNodeList()) {  //Transcribe data to Nodes
-                startServices startNodes = new startServices(data, n);
+            for (Node o : data.getNodeList()) {  //Transcribe data to Nodes
+                startServices startNodes = new startServices(data, o);
                 startNodes.run();
             }
 
@@ -108,6 +127,17 @@ public class Query implements InifQuery {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    public void printUnassignedNodes() {
+        try {
+            System.out.println("Nodes Unassigned: " + nodeList.size());
+            for (Node n : nodeList) {
+                System.out.println("Node IP: " + n.getNodeIP() + " Port: " + n.getNodePort());
+            }
+        } catch (Exception e) {
+            System.out.println("Can't print Unassigned Nodes!");
         }
     }
 }

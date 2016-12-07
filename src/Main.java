@@ -32,7 +32,7 @@ public class Main {
 
     }
 
-    private static boolean isValidIPV4(final String s) {
+    public static boolean isValidIPV4(final String s) {
         return IPV4_PATTERN.matcher(s).matches();
     }
 
