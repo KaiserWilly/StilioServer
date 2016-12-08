@@ -36,7 +36,7 @@ public class FXMenu extends Application {
     }
 
     private static Scene menuScene() {
-        ChoiceBox cb = new ChoiceBox<>(FXCollections.observableArrayList("Query Server", new Separator(), "Resource Node", "Client Node"));
+        ChoiceBox cb = new ChoiceBox<>(FXCollections.observableArrayList("QueryServer Server", new Separator(), "Resource Node", "Client Node"));
 
         VBox base = new VBox();
         base.setPadding(new Insets(8));
@@ -67,7 +67,7 @@ public class FXMenu extends Application {
         pText.setPrefSize(100, 25);
 
 
-        Label ipLabel = new Label("Query IP:");
+        Label ipLabel = new Label("QueryServer IP:");
         ipLabel.setPrefHeight(25);
         ipLabel.setAlignment(Pos.CENTER_RIGHT);
         TextField ipText = new TextField("0.0.0.0");
@@ -110,7 +110,7 @@ public class FXMenu extends Application {
                     labels.getChildren().addAll(ipLabel, pLabel, passLabel);
                     textF.getChildren().addAll(ipText, pText, passText);
                     break;
-                case 0: // Query Server
+                case 0: // QueryServer Server
                     labels.getChildren().add(pLabel);
                     textF.getChildren().add(pText);
                     break;

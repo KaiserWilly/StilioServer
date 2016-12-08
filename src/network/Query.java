@@ -1,146 +1,60 @@
 package network;
 
-import network.shard.*;
-
 import java.net.Inet4Address;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * Created by JD Isenhart on 11/17/2016.
+ * Created by JD Isenhart on 12/7/2016.
  * Testing RMI creation in Java 8
  */
-public class Query implements InifQuery {
-    private ArrayList<Node> nodeList = new ArrayList<>();
-    private ArrayList<Array> arrayList = new ArrayList<>();
-    private final Shard[] SHARDS = new Shard[]{new ChatShard(), new ContractShard(), new FilingShard(), new CoreShard()};
+public class Query {
 
     public void startQuery(int port) {
+        String ip = null;
         try {
             LocateRegistry.createRegistry(port);
-            Query obj = new Query();// Create new instance of content for RMI to use
-            InifQuery stub = (InifQuery) UnicastRemoteObject.exportObject(obj, 0); //create stub
-            Registry registry = LocateRegistry.getRegistry(port);//Denote port to get registry from
-            registry.bind("Query", stub); //Bind stub to registry
-
-            System.out.println("Query Server Started!");
-            System.out.println("IP Address: " + Inet4Address.getLocalHost().getHostAddress());
-            System.out.println("Port: " + port);
-            new QueryIOConsole(Inet4Address.getLocalHost().getHostAddress(), 1180).run();
+            ip = Inet4Address.getLocalHost().getHostAddress();
         } catch (Exception e) {
-            System.err.println("Can't create Query Server");
+            System.err.println("Unable to create Query Registry");
+            System.exit(1);
+        }
+        startQueryServer(port);
+        startQueryClient(port);
+        System.out.println("IP Address: " + ip);
+        System.out.println("Port: " + port);
+        new QueryIOConsole(ip, port).run();
+    }
+
+    public void startQueryServer(int port) {
+        try {
+            QueryServer obj = new QueryServer(port);// Create new instance of content for RMI to use
+            InifQueryServer stub = (InifQueryServer) UnicastRemoteObject.exportObject(obj, 0); //create stub
+            Registry registry = LocateRegistry.getRegistry(port);//Denote port to get registry from
+            registry.bind("QueryServer", stub); //Bind stub to registry
+
+            System.out.println("Query Server \"QueryServer\" Started!");
+
+        } catch (Exception e) {
+            System.err.println("Can't create Query: Server");
             e.printStackTrace();
             System.exit(0);
         }
     }
 
-    public void registerNode(String ip, int port) throws RemoteException {
-        Node nNode = new Node(ip, port, null);
-        boolean update = false;
-
-        for (int i = 0; i < nodeList.size() && !update; i++) {
-            Node n = nodeList.get(i);
-            if (n.getNodeIP().equals(ip) && n.getNodePort() == port) {
-                nodeList.set(i, nNode);
-                System.out.println("Reconnected Node! IP: " + ip + " Port: " + port);
-                update = true;
-            }
-        }
-        if (!update) {
-            nodeList.add(new Node(ip, port, null));
-            System.out.println("New Node! IP: " + ip + " Port: " + port);
-        }
-
-
-        if (nodeList.size() >= SHARDS.length) {
-            System.out.println("Creating new Array!");
-            new ArrayCreate().run();
-        }
-    }
-
-    @Override
-    public void removeArray(Array a) throws RemoteException {
-        arrayList.remove(a);
-        System.err.println("Array Dissolved!");
-    }
-
-    public void queryErrState(String statement) throws RemoteException {
-        System.err.println(statement);
-    }
-
-    private class ArrayCreate extends Thread {
-        Array data = new Array();
-
-        public void run() {
-            List<Node> aList = new ArrayList<>();
-            Node n = null;
-            try {
-                data.setQueryIP(Inet4Address.getLocalHost().getHostAddress());
-                data.setQueryPort(1180);
-                for (int i = 0; i < SHARDS.length; i++) { //Verify Node is active
-                    n = nodeList.get(i);
-                    aList.add(n);
-                    n.setShard(SHARDS[i]);
-                    data.addShardMap(n);
-                    Registry registry = LocateRegistry.getRegistry(n.getNodeIP(), n.getNodePort()); //IP Address of RMI Server, port of RMIRegistry
-                    registry.lookup("AdminServer"); //Name of RMI Server in registry
-                    data.addNode(n);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.err.println("Unable to create new Array! (Ping)");
-                nodeList.remove(nodeList.indexOf(n));
-                System.out.println("Returned good Nodes to List!");
-                return;
-            }
-            nodeList.removeAll(aList);
-
-            for (Node o : data.getNodeList()) {  //Transcribe data to Nodes
-                startServices startNodes = new startServices(data, o);
-                startNodes.run();
-            }
-
-            arrayList.add(data);
-        }
-
-        class startServices extends Thread {
-            Array data;
-            Node n;
-
-            startServices(Array data, Node n) {
-                this.data = data;
-                this.n = n;
-            }
-
-            public void run() {
-                try {
-                    Registry registry = LocateRegistry.getRegistry(n.getNodeIP(), n.getNodePort()); //IP Address of RMI Server, port of RMIRegistry
-                    InifNode stub = (InifNode) registry.lookup("AdminNode"); //Name of RMI Server in registry
-                    stub.setArrayData(data);
-                    stub.setShard(n.getShard());
-                    stub.startService();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    public void printUnassignedNodes() {
+    public void startQueryClient(int port) {
         try {
-            System.out.println("Nodes Unassigned: " + nodeList.size());
-            for (Node n : nodeList) {
-                System.out.println("Node IP: " + n.getNodeIP() + " Port: " + n.getNodePort());
-            }
+            QueryClient obj = new QueryClient();// Create new instance of content for RMI to use
+            InifQueryClient stub = (InifQueryClient) UnicastRemoteObject.exportObject(obj, 0); //create stub
+            Registry registry = LocateRegistry.getRegistry(port);//Denote port to get registry from
+            registry.bind("QueryClient", stub); //Bind stub to registry
+
+            System.out.println("Query Server \"QueryClient\" Started!");
         } catch (Exception e) {
-            System.out.println("Can't print Unassigned Nodes!");
+            System.err.println("Can't create Query: Client");
+            e.printStackTrace();
+            System.exit(0);
         }
     }
 }
-
-
-

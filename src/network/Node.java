@@ -87,12 +87,12 @@ public class Node implements InifNode, InifServer, Serializable {
     private void registerWithQuery(String queryIP, int port) {
         try {
             Registry registry = LocateRegistry.getRegistry(queryIP, port); //IP Address of RMI Server, nodePort of RMIRegistry
-            InifQuery stub = (InifQuery) registry.lookup("Query"); //Name of RMI Server in registry
+            InifQueryServer stub = (InifQueryServer) registry.lookup("QueryServer"); //Name of RMI Server in registry
             stub.registerNode(Inet4Address.getLocalHost().getHostAddress(), nodePort);
-            System.out.println("Successfully Registered with Query! Port: " + nodePort);
+            System.out.println("Successfully Registered with QueryServer! Port: " + nodePort);
             System.out.println();
         } catch (Exception e) {
-            System.err.println("Can't connect to Query Server!");
+            System.err.println("Can't connect to QueryServer Server!");
             System.err.println("IP Address: " + queryIP + "  Port: " + port);
             System.err.println("Terminating Node");
             e.printStackTrace();
@@ -124,6 +124,13 @@ public class Node implements InifNode, InifServer, Serializable {
         arrayData = null;
         shard = null;
         registerWithQuery(this.queryIP, this.qport);
+    }
+
+    @Override
+    public void terminateNode(String reason) throws RemoteException {
+        //Run Shard Cleanup methods
+        System.err.println("Node to Terminate: " + reason);
+        System.exit(1);
     }
 
     public void setShard(Shard shard) {
@@ -231,13 +238,13 @@ public class Node implements InifNode, InifServer, Serializable {
         try {
             Node core = arrayData.getShardMap().get("Core");
             Registry queryRegistry = LocateRegistry.getRegistry(arrayData.getQueryIP(), arrayData.getQueryPort()); //IP Address of RMI Server, port of RMIRegistry
-            InifQuery queryStub = (InifQuery) queryRegistry.lookup("Query");
+            InifQueryServer queryStub = (InifQueryServer) queryRegistry.lookup("QueryServer");
             queryStub.queryErrState("Reported Core Timeout! \n " +
                     "Core IP:" + core.getNodeIP() + " Port:" + core.getNodePort() +
                     "\n Reporting Node IP:" + Inet4Address.getLocalHost().getHostAddress() + " Port:" + getNodePort());
 
         } catch (Exception e) {
-            System.err.println("Unable to inform Query of Core Timeout!");
+            System.err.println("Unable to inform QueryServer of Core Timeout!");
         }
     }
 }

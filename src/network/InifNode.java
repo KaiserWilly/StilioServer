@@ -20,4 +20,6 @@ public interface InifNode extends Remote {
     void startService() throws RemoteException;
 
     void unassignNode(String reason) throws RemoteException;
+
+    void terminateNode(String reason) throws RemoteException;
 }

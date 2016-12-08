@@ -66,7 +66,7 @@ public class CoreShard extends Shard implements InifCore {
     private static void dissolveArray(Array data) {
         try {
             Registry queryRegistry = LocateRegistry.getRegistry(data.getQueryIP(), data.getQueryPort()); //IP Address of RMI Server, port of RMIRegistry
-            InifQuery queryStub = (InifQuery) queryRegistry.lookup("Query");
+            InifQueryServer queryStub = (InifQueryServer) queryRegistry.lookup("QueryServer");
             queryStub.removeArray(data);
             for (Node n : data.getNodeList()) {
                 try {
