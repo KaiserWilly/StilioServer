@@ -1,6 +1,8 @@
-import fx.FXMenu;
 import network.Node;
 import network.Query;
+import network.Shard;
+import shards.Contracts;
+import shards.Records;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,14 +19,13 @@ public class Main {
     static private Pattern IPV4_PATTERN = Pattern.compile(IPV4_REGEX);
 
     public static void main(String[] args) {
-        System.setProperty("prism.lcdtext", "false");
         ArrayList<String> argsList = new ArrayList<>();
         Collections.addAll(argsList, args);
 
         if (!argsList.contains("nogui")) {
-            FXMenu.run(args);
+//            FXMenu.run(args);
         } else if (argsList.get(0).equals("q")) {
-            Query server = new Query();
+            Query server = new Query(createShardList());
             server.startQuery(Integer.parseInt(argsList.get(1)));
         } else if (isValidIPV4(argsList.get(0))) {
             new Node(argsList.get(0), Integer.parseInt(argsList.get(1)));
@@ -34,6 +35,14 @@ public class Main {
 
     public static boolean isValidIPV4(final String s) {
         return IPV4_PATTERN.matcher(s).matches();
+    }
+
+    public static ArrayList<Shard> createShardList() {
+        ArrayList<Shard> shardList = new ArrayList<>();
+        shardList.add(new Contracts());
+        shardList.add(new Records());
+
+        return shardList;
     }
 
 }
