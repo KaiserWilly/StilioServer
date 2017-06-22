@@ -1,0 +1,3 @@
+Coal,1.0
+Oil,1.25
+Natural Gas,1.55
